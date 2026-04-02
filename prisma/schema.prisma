@@ -1,0 +1,40 @@
+// This is your Prisma schema — think of it like your Mongoose models file
+// After any change: run `npx prisma db push` to sync with the database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  age       Int
+  gender    String   // "Male" | "Female" | "Other"
+  createdAt DateTime @default(now())
+
+  // Relation — one user has many feature clicks (like a ref array in Mongo)
+  featureClicks FeatureClick[]
+
+  @@map("users")
+}
+
+model FeatureClick {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  featureName String
+  timestamp   DateTime @default(now())
+
+  // Relation — each click belongs to a user
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([featureName])
+  @@map("feature_clicks")
+}
